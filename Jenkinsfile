@@ -1,39 +1,110 @@
 pipeline {
 
-    agent any
+```
+agent any
 
-    tools {
-        jdk 'JDK17'
-        maven 'Maven3'
+tools {
+    jdk 'JDK17'
+    maven 'Maven3'
+}
+
+environment {
+    IMAGE_NAME = "yourdockerhubusername/shipment-service"
+    IMAGE_TAG  = "${BUILD_NUMBER}"
+}
+
+stages {
+
+    stage('Checkout') {
+        steps {
+            checkout scm
+        }
     }
 
-    stages {
-
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
+    stage('Build') {
+        steps {
+            sh 'mvn clean package'
         }
+    }
 
-        stage('Build') {
-            steps {
-                sh 'mvn clean package'
-            }
+    stage('Test') {
+        steps {
+            sh 'mvn test'
         }
+    }
 
-        stage('Test') {
-            steps {
-                sh 'mvn test'
-            }
-        }
-
-        stage('Docker Build') {
-            steps {
+    stage('SonarQube Analysis') {
+        steps {
+            withSonarQubeEnv('sonarqube') {
                 sh '''
-                docker build \
-                -t shipment-service:${BUILD_NUMBER} .
+                mvn sonar:sonar \
+                -Dsonar.projectKey=shipment-service \
+                -Dsonar.projectName=shipment-service
                 '''
             }
         }
     }
+
+    stage('Trivy File Scan') {
+        steps {
+            sh 'trivy fs .'
+        }
+    }
+
+    stage('Docker Build') {
+        steps {
+            sh '''
+            docker build \
+            -t ${IMAGE_NAME}:${IMAGE_TAG} .
+            '''
+        }
+    }
+
+    stage('Trivy Image Scan') {
+        steps {
+            sh '''
+            trivy image ${IMAGE_NAME}:${IMAGE_TAG}
+            '''
+        }
+    }
+
+    stage('Docker Push') {
+        steps {
+            withCredentials([
+                usernamePassword(
+                    credentialsId: 'dockerhub-creds',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )
+            ]) {
+                sh '''
+                echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+
+                docker push ${IMAGE_NAME}:${IMAGE_TAG}
+
+                docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+
+                docker push ${IMAGE_NAME}:latest
+                '''
+            }
+        }
+    }
+
+    stage('Deploy') {
+        steps {
+            sh '''
+            docker stop shipment-service || true
+            docker rm shipment-service || true
+
+            docker run -d \
+            --name shipment-service \
+            -p 8081:8080 \
+            ${IMAGE_NAME}:${IMAGE_TAG}
+            '''
+        }
+    }
 }
+```
+
+}
+
