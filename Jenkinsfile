@@ -1,6 +1,5 @@
 pipeline {
 
-```
 agent any
 
 tools {
@@ -9,7 +8,7 @@ tools {
 }
 
 environment {
-    IMAGE_NAME = "yourdockerhubusername/shipment-service"
+    IMAGE_NAME = "daya9096/shipment-service"
     IMAGE_TAG  = "${BUILD_NUMBER}"
 }
 
@@ -98,13 +97,13 @@ stages {
 
             docker run -d \
             --name shipment-service \
-            -p 8081:8080 \
+            -p 8087:8080 \
             ${IMAGE_NAME}:${IMAGE_TAG}
             '''
         }
     }
 }
-```
+
 
 }
 
