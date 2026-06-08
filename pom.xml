@@ -6,8 +6,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.devops</groupId>
-    <artifactId>ott-platform</artifactId>
-    <version>1.0</version>
+    <artifactId>shipment-service</artifactId>
+    <version>1.0.0</version>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
