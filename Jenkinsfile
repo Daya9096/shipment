@@ -90,10 +90,10 @@ stages {
             docker container prune -f || true
 
             echo "Pulling latest image..."
-            docker-compose pull
+            docker compose pull
 
             echo "Starting application stack..."
-            docker-compose up -d
+            docker compose up -d
 
             echo "Deployment completed"
 
