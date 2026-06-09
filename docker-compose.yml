@@ -14,7 +14,7 @@ services:
       - mysql-data:/var/lib/mysql
 
   shipment-service:
-    build: .
+    image: daya9096/shipment-service
     container_name: shipment-service
     ports:
       - "8085:8080"
@@ -24,6 +24,8 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/shipmentdb
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root123
+
+    restart: always
 
 volumes:
   mysql-data:
