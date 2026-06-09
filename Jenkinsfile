@@ -8,7 +8,7 @@ tools {
 }
 
 environment {
-    IMAGE_NAME = "YOUR_DOCKERHUB_USERNAME/shipment-service"
+    IMAGE_NAME = "daya9096/shipment-service"
     IMAGE_TAG = "${BUILD_NUMBER}"
 }
 
