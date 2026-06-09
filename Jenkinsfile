@@ -1,6 +1,5 @@
 pipeline {
 
-```
 agent any
 
 tools {
@@ -122,6 +121,5 @@ post {
         echo 'Pipeline failed. Check logs.'
     }
 }
-```
 
 }
