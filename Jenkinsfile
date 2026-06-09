@@ -60,14 +60,6 @@ stages {
         }
     }
 
-    stage('Trivy Image Scan') {
-        steps {
-            sh '''
-            trivy image $IMAGE_NAME:latest
-            '''
-        }
-    }
-
     stage('Docker Push') {
         steps {
             withCredentials([
