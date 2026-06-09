@@ -83,18 +83,13 @@ stages {
     }
 
     stage('Deploy') {
-        steps {
-            sh '''
-            docker stop shipment-service || true
-            docker rm shipment-service || true
-
-            docker run -d \
-            --name shipment-service \
-            -p 8087:8080 \
-            ${IMAGE_NAME}:${IMAGE_TAG}
-            '''
-        }
+    steps {
+        sh '''
+        docker-compose down || true
+        docker-compose up -d
+        '''
     }
+}
 }
 
 
