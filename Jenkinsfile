@@ -1,5 +1,6 @@
 pipeline {
 
+```
 agent any
 
 tools {
@@ -8,8 +9,8 @@ tools {
 }
 
 environment {
-    IMAGE_NAME = "daya9096/shipment-service"
-    IMAGE_TAG  = "${BUILD_NUMBER}"
+    IMAGE_NAME = "YOUR_DOCKERHUB_USERNAME/shipment-service"
+    IMAGE_TAG = "${BUILD_NUMBER}"
 }
 
 stages {
@@ -54,11 +55,19 @@ stages {
         steps {
             sh '''
             docker build \
-            -t ${IMAGE_NAME}:${IMAGE_TAG} .
+            -t $IMAGE_NAME:$IMAGE_TAG \
+            -t $IMAGE_NAME:latest .
             '''
         }
     }
 
+    stage('Trivy Image Scan') {
+        steps {
+            sh '''
+            trivy image $IMAGE_NAME:latest
+            '''
+        }
+    }
 
     stage('Docker Push') {
         steps {
@@ -69,29 +78,50 @@ stages {
                     passwordVariable: 'DOCKER_PASS'
                 )
             ]) {
+
                 sh '''
                 echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
 
-                docker push ${IMAGE_NAME}:${IMAGE_TAG}
-
-                docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
-
-                docker push ${IMAGE_NAME}:latest
+                docker push $IMAGE_NAME:$IMAGE_TAG
+                docker push $IMAGE_NAME:latest
                 '''
             }
         }
     }
 
     stage('Deploy') {
-    steps {
-        sh '''
-        docker-compose down || true
-        docker-compose up -d
-        '''
+        steps {
+            sh '''
+            echo "Stopping old deployment..."
+            docker-compose down || true
+
+            echo "Removing unused containers..."
+            docker container prune -f || true
+
+            echo "Pulling latest image..."
+            docker-compose pull
+
+            echo "Starting application stack..."
+            docker-compose up -d
+
+            echo "Deployment completed"
+
+            docker ps
+            '''
+        }
     }
 }
+
+post {
+
+    success {
+        echo 'Pipeline executed successfully!'
+    }
+
+    failure {
+        echo 'Pipeline failed. Check logs.'
+    }
 }
-
+```
 
 }
-
