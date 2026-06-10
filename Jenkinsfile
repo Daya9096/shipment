@@ -60,6 +60,15 @@ stages {
         }
     }
 
+    stage('Trivy Image Scan') {
+            steps {
+                sh """
+                trivy image ${IMAGE_NAME}:${IMAGE_TAG} \
+                --format table -o trivy-image-report.txt || true
+                """
+            }
+        }
+
     stage('Docker Push') {
         steps {
             withCredentials([
