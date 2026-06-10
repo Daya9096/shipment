@@ -63,6 +63,8 @@ stages {
     stage('Trivy Image Scan') {
             steps {
                 sh """
+                export TMPDIR=/opt/trivy-tmp
+                
                 trivy image ${IMAGE_NAME}:${IMAGE_TAG} \
                 --format table -o trivy-image-report.txt || true
                 """
